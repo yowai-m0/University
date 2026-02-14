@@ -7,14 +7,32 @@ import (
 	"log"
 	"os"
 	"strings"
-
+    
+    "github.com/joho/godotenv"
 	"github.com/jackc/pgx/v5"
 )
 
 func main() {
     reader := bufio.NewReader(os.Stdin)
-    conn, err := pgx.Connect(context.Background(),
-        "host=localhost port=5432 dbname=students_db user=postgres password=artmazov sslmode=disable")
+    // ===== 1. ЗАГРУЖАЕМ .env ФАЙЛ =====
+    err := godotenv.Load()
+    if err != nil {
+        log.Fatal("Ошибка загрузки .env файла:", err)
+    }
+    
+    // ===== 2. ЧИТАЕМ ПЕРЕМЕННЫЕ =====
+    host := os.Getenv("DB_HOST")
+    port := os.Getenv("DB_PORT")
+    dbname := os.Getenv("DB_NAME")
+    user := os.Getenv("DB_USER")
+    password := os.Getenv("DB_PASSWORD")
+    
+    // ===== 3. СОБИРАЕМ СТРОКУ ПОДКЛЮЧЕНИЯ =====
+    connStr := fmt.Sprintf("host=%s port=%s dbname=%s user=%s password=%s sslmode=disable",
+        host, port, dbname, user, password)
+    
+    // ===== 4. ПОДКЛЮЧАЕМСЯ =====
+    conn, err := pgx.Connect(context.Background(), connStr)
     if err != nil {
         log.Fatal(err)
     }
